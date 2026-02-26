@@ -26,6 +26,7 @@ class VehicleLogicRouter:
             Dict[str, List[Detection]]: Structured routing output grouped by vehicle type.
         """
         routed_data: Dict[str, List[Detection]] = {
+            "persons": [],
             "motorcycles": [],
             "cars": [],
             "heavy_vehicles": []
@@ -33,7 +34,9 @@ class VehicleLogicRouter:
 
         for det in detections:
             cat_name = det.class_name.lower()
-            if cat_name == "motorcycle":
+            if cat_name == "person":
+                routed_data["persons"].append(det)
+            elif cat_name == "motorcycle":
                 routed_data["motorcycles"].append(det)
             elif cat_name == "car":
                 routed_data["cars"].append(det)
