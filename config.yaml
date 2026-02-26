@@ -1,0 +1,16 @@
+model:
+  weights: "yolov8n.pt"  # Pre-trained YOLOv8 Nano model (downloads automatically)
+  confidence_threshold: 0.5
+  iou_threshold: 0.45
+  # 0: person (Future Phase 2: Rider Association)
+  # 2: car, 3: motorcycle, 5: bus, 7: truck
+  target_classes: [0, 2, 3, 5, 7]
+  tracker: "bytetrack.yaml" # Built-in robust multiobject tracker
+
+io: # I/O Configurations
+  input_source: "data/input/videoplayback.mp4" # Replace with your test video path or 0 for webcam
+  output_dir: "data/output/"
+  save_results: true
+  show_display: true
+  frame_skip: 1 # Production optimization: Skip N frames periodically
+
