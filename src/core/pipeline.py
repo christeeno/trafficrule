@@ -4,6 +4,7 @@ import logging
 import time
 
 from src.core.detector import VehicleDetector
+from src.core.logic_router import VehicleLogicRouter
 from src.utils.drawing import draw_detections
 
 logger = logging.getLogger("TrafficSystem.Pipeline")
@@ -25,6 +26,9 @@ class TrafficPipeline:
             target_classes=model_cfg['target_classes'],
             tracker=model_cfg.get('tracker', 'bytetrack.yaml')
         )
+        
+        # Instantiate logical routing layer (Phase 2)
+        self.logic_router = VehicleLogicRouter()
         
         self.io_cfg = self.config['io']
 
@@ -78,7 +82,13 @@ class TrafficPipeline:
             # 1. Detection & Tracking Layer
             detections = self.detector.detect_and_track(frame)
 
-            # 2. Annotation Component
+            # 2. Routing Layer (Phase 2)
+            routed_detections = self.logic_router.route(detections)
+            logger.info("--- Structured Routing Output ---")
+            for category, det_list in routed_detections.items():
+                logger.info(f"{category}: {[f'{d.class_name}(ID:{d.track_id})' for d in det_list]}")
+
+            # 3. Annotation Component
             annotated_frame = draw_detections(frame.copy(), detections)
 
             # Performance & Logging tracker
