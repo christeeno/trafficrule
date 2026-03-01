@@ -5,6 +5,7 @@ import time
 
 from src.core.detector import VehicleDetector
 from src.core.logic_router import VehicleLogicRouter
+from src.core.rider_association import RiderAssociationEngine
 from src.utils.drawing import draw_detections
 
 logger = logging.getLogger("TrafficSystem.Pipeline")
@@ -29,6 +30,9 @@ class TrafficPipeline:
         
         # Instantiate logical routing layer (Phase 2)
         self.logic_router = VehicleLogicRouter()
+        
+        # Instantiate rider association layer (Phase 3)
+        self.rider_association = RiderAssociationEngine()
         
         self.io_cfg = self.config['io']
 
@@ -88,7 +92,14 @@ class TrafficPipeline:
             for category, det_list in routed_detections.items():
                 logger.info(f"{category}: {[f'{d.class_name}(ID:{d.track_id})' for d in det_list]}")
 
-            # 3. Annotation Component
+            # 3. Rider Association Layer (Phase 3)
+            associations = self.rider_association.associate(routed_detections)
+            logger.info("--- Rider Association Output ---")
+            for moto_id, data in associations.items():
+                rider_ids_str = f"[{', '.join([f'person(ID:{r.track_id})' for r in data['riders']])}]"
+                logger.info(f"Motorcycle(ID:{moto_id}) -> Riders: {rider_ids_str}")
+
+            # 4. Annotation Component
             annotated_frame = draw_detections(frame.copy(), detections)
 
             # Performance & Logging tracker
